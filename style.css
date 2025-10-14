@@ -13,10 +13,22 @@ td {
     border: 1px solid black;
 }
 
-td.start {
-    background-color: green;
+td.active {
+    background-color: purple;
+}
+
+td.wall {
+    background-color: gray;
+}
+
+td.path {
+    background-color: dodgerblue;
 }
 
 td.end {
     background-color: red;
+}
+
+td.start {
+    background-color: green;
 }

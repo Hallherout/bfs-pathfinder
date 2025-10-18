@@ -6,6 +6,22 @@ class Position {
     }
 }
 
+//Variabel interval
+let bfsInterval = null;
+    backtrackInterval = null;
+
+//Fungsi untuk stop semua interval yang berjalan
+function stopAllIntervals() {
+    if (bfsInterval) {
+        clearInterval(bfsInterval);
+        bfsInterval = null;
+    }
+    if (backtrackInterval) {
+        clearInterval(backtrackInterval);
+        backtrackInterval = null;
+    }
+}
+
 //Fungsi untuk mencari sel pada grid
 function getCell(row, col) {
     return document.querySelector('td[data-row="' + row + '"][data-col="' + col + '"]');
@@ -16,6 +32,18 @@ function getPosition(element) {
     if (!element) return;
     return new Position(parseInt(element.dataset.row), parseInt(element.dataset.col));
 }
+
+//Mode selector
+let mode = 'start',
+    isMouseDown = false;
+const selButtons = document.querySelector('.selector'),
+    vis = document.getElementById('vis');
+
+selButtons.addEventListener('click', (e) => {
+    if(e.target.tagName == 'BUTTON') {
+        mode = e.target.id;
+    }
+});
 
 //Variabel grid
 let row = 20,
@@ -45,18 +73,12 @@ function genGrid(row, col) {
 
 //Event untuk reset grid
 document.getElementById('reset').addEventListener('click', () => {
+    stopAllIntervals();
     delGrid();
     genGrid(row, col);
-});
-
-//Mode selector
-let mode = 'start',
-    isMouseDown = false;
-const selButtons = document.querySelector('.selector');
-
-selButtons.addEventListener('click', (e) => {
-    if(e.target.tagName == 'BUTTON') {
-        mode = e.target.id;
+    vis.disabled = false;
+    for (const x of selButtons.children) {
+        x.disabled = false;
     }
 });
 
@@ -101,12 +123,13 @@ window.addEventListener('mouseup', () => {
 });
 
 //Mulai visualisasi
-document.getElementById('vis').addEventListener('click', (e) => {
+vis.addEventListener('click', (e) => {
     //Definisi posisi start dan end
     const start = getPosition(document.querySelector('.start')),
         end = getPosition(document.querySelector('.end'));
 
     if (!start || !end) return;
+    stopAllIntervals();
 
     mode = null;
     e.target.disabled = true;
@@ -125,7 +148,7 @@ document.getElementById('vis').addEventListener('click', (e) => {
     visited[start.row][start.col] = true;
 
     //Algoritma BFS
-    const bfs = setInterval(() => {
+    bfsInterval = setInterval(() => {
         if (current = queue.shift()) {
             if (current.row === end.row && current.col === end.col) {
                 const path = [];
@@ -137,15 +160,17 @@ document.getElementById('vis').addEventListener('click', (e) => {
                 }
 
                 let cell;
-                const backtrack = setInterval(() => {
+                backtrackInterval = setInterval(() => {
                     if (cell = path.shift()) {
                         getCell(cell.row, cell.col).classList.add('path');
                     } else {
-                        clearInterval(backtrack);
+                        clearInterval(backtrackInterval);
+                        backtrackInterval = null;
                     }
                 }, 20);
 
-                clearInterval(bfs);
+                clearInterval(bfsInterval);
+                bfsInterval = null;
                 return;
             }
             getCell(current.row, current.col).classList.add('active');
@@ -159,6 +184,9 @@ document.getElementById('vis').addEventListener('click', (e) => {
                     visited[child.row][child.col] = true;
                 }
             })
-        } else clearInterval(bfs);
+        } else {
+            clearInterval(bfsInterval);
+            bfsInterval = null;
+        }
     }, 20);
 });

@@ -17,13 +17,6 @@ function getPosition(element) {
     return new Position(parseInt(element.dataset.row), parseInt(element.dataset.col));
 }
 
-//Mode selector
-document.querySelector('.selector').addEventListener('click', (e) => {
-    if(e.target.tagName == 'BUTTON') {
-        mode = e.target.id;
-    }
-});
-
 //Inisialisasi grid
 const row = 20,
     column = 20,
@@ -40,12 +33,19 @@ for (let i = 0; i < row; i++) {
     table.appendChild(tr);
 }
 
-//Event modifikasi sel
+//Mode selector
 let mode = 'start',
-    isMouseDown = false,
-    isAddingWall = false;
+    isMouseDown = false;
+const selButtons = document.querySelector('.selector');
 
-    table.addEventListener('mousedown', (e) => {
+selButtons.addEventListener('click', (e) => {
+    if(e.target.tagName == 'BUTTON') {
+        mode = e.target.id;
+    }
+});
+
+//Event modifikasi sel
+table.addEventListener('mousedown', (e) => {
     isMouseDown = true;
     if (e.target.tagName == 'TD') {
         if (mode == 'start' && !(e.target.classList.contains('wall') || e.target.classList.contains('end'))) {
@@ -59,20 +59,23 @@ let mode = 'start',
             });
             e.target.classList.add('end');
         } else if (mode == 'wall' && !(e.target.classList.contains('start') || e.target.classList.contains('end'))) {
-            isAddingWall = !e.target.classList.contains('wall');
-            e.target.classList.toggle('wall');
+            e.target.classList.add('wall');
+        } else if (mode == 'erase') {
+            e.target.classList.remove('wall');
+            e.target.classList.remove('start');
+            e.target.classList.remove('end');
         }
     }
 });
 
 table.addEventListener('mousemove', (e) => {
-    if (isMouseDown && mode == 'wall' && e.target.tagName == 'TD') {
-        if (!e.target.classList.contains('start') && !e.target.classList.contains('end')) {
-            if (isAddingWall) {
-                e.target.classList.add('wall');
-            } else {
-                e.target.classList.remove('wall');
-            }
+    if (isMouseDown && (mode == 'wall' || mode == 'erase') && e.target.tagName == 'TD') {
+        if (mode == 'wall') {
+            if (!e.target.classList.contains('start') && !e.target.classList.contains('end')) e.target.classList.add('wall');
+        } else {
+            e.target.classList.remove('wall');
+            e.target.classList.remove('start');
+            e.target.classList.remove('end');
         }
     }
 });
@@ -82,12 +85,18 @@ window.addEventListener('mouseup', () => {
 });
 
 //Mulai visualisasi
-document.getElementById('vis').addEventListener('click', () => {
+document.getElementById('vis').addEventListener('click', (e) => {
     //Definisi posisi start dan end
     const start = getPosition(document.querySelector('.start')),
         end = getPosition(document.querySelector('.end'));
 
     if (!start || !end) return;
+
+    mode = null;
+    e.target.disabled = true;
+    for (const x of selButtons.children) {
+        x.disabled = true;
+    }
 
     //Definisi variabel BFS
     const queue = [start],
@@ -111,13 +120,12 @@ document.getElementById('vis').addEventListener('click', () => {
                     node = parent[node.row][node.col];
                 }
 
-                let i = 0;
+                let cell;
                 const backtrack = setInterval(() => {
-                    if (!path[i]) {
-                        clearInterval(backtrack);
+                    if (cell = path.shift()) {
+                        getCell(cell.row, cell.col).classList.add('path');
                     } else {
-                        getCell(path[i].row, path[i].col).classList.add('path');
-                        i++;
+                        clearInterval(backtrack);
                     }
                 }, 20);
 

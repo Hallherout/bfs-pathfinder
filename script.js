@@ -90,6 +90,7 @@ function resetGrid() {
     for (const x of selButtons.children) {
         x.disabled = false;
     }
+    mode = 'start';
 }
 
 document.getElementById('reset').addEventListener('click', () => {

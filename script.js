@@ -47,8 +47,18 @@ selButtons.addEventListener('click', (e) => {
 
 //Variabel grid
 let row = 20,
-    col = 20;
-const table = document.querySelector('table');
+    col = 20,
+    delay = 20;
+
+const table = document.querySelector('table'),
+    rowInput = document.getElementById('row'),
+    colInput = document.getElementById('col'),
+    delayInput = document.getElementById('delay'),
+    submitBtn = document.getElementById('submit');
+
+rowInput.value = row;
+colInput.value = col;
+delayInput.value = delay;
 
 //Fungsi untuk hapus grid
 function delGrid() {
@@ -71,8 +81,8 @@ function genGrid(row, col) {
     }
 } genGrid(row, col);
 
-//Event untuk reset grid
-document.getElementById('reset').addEventListener('click', () => {
+//Fungsi untuk reset grid
+function resetGrid() {
     stopAllIntervals();
     delGrid();
     genGrid(row, col);
@@ -80,6 +90,25 @@ document.getElementById('reset').addEventListener('click', () => {
     for (const x of selButtons.children) {
         x.disabled = false;
     }
+}
+
+document.getElementById('reset').addEventListener('click', () => {
+    resetGrid();
+});
+
+//Event ganti ukuran grid
+submitBtn.addEventListener('click', () => {
+    rowInput.value = (rowInput.value < 1) ? 1 : rowInput.value;
+    rowInput.value = (rowInput.value > 100) ? 100 : rowInput.value;
+    colInput.value = (colInput.value < 1) ? 1 : colInput.value;
+    colInput.value = (colInput.value > 100) ? 100 : colInput.value;
+    delayInput.value = (delayInput.value < 0) ? 0 : delayInput.value;
+
+    row = rowInput.value;
+    col = colInput.value;
+    delay = delayInput.value;
+
+    resetGrid();
 });
 
 //Event modifikasi sel
@@ -167,7 +196,7 @@ vis.addEventListener('click', (e) => {
                         clearInterval(backtrackInterval);
                         backtrackInterval = null;
                     }
-                }, 20);
+                }, delay);
 
                 clearInterval(bfsInterval);
                 bfsInterval = null;
@@ -188,5 +217,5 @@ vis.addEventListener('click', (e) => {
             clearInterval(bfsInterval);
             bfsInterval = null;
         }
-    }, 20);
+    }, delay);
 });
